@@ -1,0 +1,128 @@
+2008-04-03  Brett Hutley  <brett@hutley.net>
+
+	* src/rq/rq_asset_asset_correlation.c/h: Added
+	* src/rq/rq_asset_base_correlation.c/h: Added
+	* src/rq/rq_asset_cds_spread.c/h: Added
+	* src/rq/rq_asset_correlation.c/h: Added
+	* src/rq/rq_asset_correlation_mgr.c/h: Added
+	* src/rq/rq_asset_dividend_yield.c/h: Added
+	* src/rq/rq_asset_recovery_rate.c/h: Added
+	* src/rq/rq_asset_swaption.c/h: Added
+	* src/rq/rq_bootstrap_adapter_cds_curve.c/h: Added
+	* src/rq/rq_bootstrap_adapter_forward_curve_bbi.c/h: Added
+	* src/rq/rq_bootstrap_adapter_ir_vol_surface.c/h: Added
+	* src/rq/rq_bootstrap_adapter_yield_curve_cubic_spline.c/h: Added
+	* src/rq/rq_bootstrap_adapter_yield_curve_day_count.c/h: Added
+	* src/rq/rq_bootstrap_cds_curve.c/h: Added
+	* src/rq/rq_bootstrap_forward_curve_bbi.c/h: Added
+	* src/rq/rq_bootstrap_ir_vol_surface.c/h: Added
+	* src/rq/rq_bootstrap_yield_curve.c/h: Added
+	* src/rq/rq_bootstrap_yield_curve_cubic_spline.c/h: Added
+	* src/rq/rq_bootstrap_yield_curve_day_count.c/h: Added
+	* src/rq/rq_cds_curve.c/h: Added
+	* src/rq/rq_cds_curve_mgr.c/h: Added
+	* src/rq/rq_ir_vol_surface.c/h: Added
+	* src/rq/rq_ir_vol_surface_mgr.c/h: Added
+	* src/rq/*.[ch]: Updated all copyright notices + merge of patches.
+
+2005-04-05  Brett Hutley  <brett@hutley.net>
+
+	* src/rq/rq_yield_curve.c (rq_yield_curve_get_discount_factor):
+	Changed this function so that it uses the default day count
+	convention whenever it needs to imply a zero rate from the yield
+	curve.
+	(rq_yield_curve_get_simple_rate): This function now uses the
+	default day count convention, and will return rate an annually
+	compounded zero-coupon rate.
+	(rq_yield_curve_set_default_day_count_convention): Added  (with get)
+
+	* src/rq/rq_yield_curve.h: Added a default_day_count_convention
+	member to struct rq_yield_curve, to be used whenever a rate is
+	implied.
+
+	* src/rq/rq_termstruct.c (rq_termstruct_get_type): Added.
+
+	* src/rq/rq_rate_conversions.c (rq_rate_discount_to_zero): Added.
+	(rq_rate_zero_to_discount): Added.
+
+	* src/rq/rq_bootstrap_yield_curve_simple.c (rq_bootstrap_yield_curve_simple): See below.
+	* src/rq/rq_bootstrap_yield_curve_composite.c (rq_bootstrap_yield_curve_composite): 
+	I'm setting the default day count convention on the yield curve now,
+	to be ACT/360 if the underlying currency asset has a days_per_year
+	value of 360.
+
+2005-04-04  Brett Hutley  <brett@hutley.net>
+	** version 0.7.4 released
+	
+	* test/code/test_fixed_flows.c: New test added.
+
+	* src/rq/rq_floating_flow.c (rq_floating_flow_set_payment_amount): 
+	The payment amount on fixed rate flows is now calculated by dividing
+	the rate by the number of payments per year.
+
+	* src/rq/rq_date.c (rq_date_calc_periods_per_year): Added.
+
+2005-03-31  Brett Hutley  <brett@hutley.net>
+
+	* src/rq/rq_enum.c (rq_day_count_convention_from_string): Added.
+
+	* src/rq/rq_day_count.c (rq_day_count_get_year_fraction): Minor
+	fix to ACT/ACT.AFB
+
+	* test/code/test_day_count.c (main): Improved the day count testing.
+
+2005-03-31  Brett Hutley  <brett@hutley.net>
+
+	** Released 0.7.3
+
+	* src/rq/rq_day_count.c (rq_day_count_get_year_fraction): Worked
+	on the day count functions some more - ACT/ACT.AFB and
+	ACT/ACT.ISMA
+
+	* src/rq/rq_floating_flow.c (rq_floating_flow_set_floating_rate_from_curve): 
+	Fixed up a bracketing bug, where the function thought the rate was
+	already set on the floating flow.
+
+	* rq_termstruct.h: Added an underlying_asset_id member.
+	* rq_termstruct.c: Created a function for setting the underlying
+	asset ID, and also made sure the clear() function free's the
+	underlying asset ID if one is set.
+
+2004-10-07 Brett Hutley <brett@hutley.net>
+
+	* src/rq/*.[ch]: Changed the way all objects are
+	implemented. Instead of hiding the implementation details inside
+	the c source file, the structure is now exposed in the header.
+	
+2004-02-10 Brett Hutley <brett@hutley.net>
+
+	* configure.in, NEWS: Changed version to 0.6.22, updated NEWS
+	
+2003-08-26  Brett Hutley  <brett@hutley.net>
+
+	* configure.in: Changed version to 0.6.2
+	* ChangeLog: Converted to proper GNU-style ChangeLog format, and
+	built the ChangeLog from my CVS comments.
+
+2003-07-18  Brett Hutley  <brett@hutley.net>
+
+	* ltmain.sh: ltmain.sh seems to be necessary for my OSX system to
+	link. Changed rq_price_blackscholes.c to use getopt instead of the
+	gnu getopt_long functions to support my BSD systems that don't
+	have that installed by default.
+
+2002-11-22  Brett Hutley  <brett@hutley.net>
+
+	* riskquantify.dsw: Updated the win32 MSVC project file to get the
+	list of source files right. Added a MSVC workspace in the root
+	directory. Took out the RQ_EXPORT define from the .c files. I'm
+	not sure if I should replace this with a .def file for the rqso
+	MSVC dll project or not.
+
+2002-07-18  Brett Hutley  <brett@hutley.net>
+
+	* INSTALL: Forgot to checkin the INSTALL file.
+	* README: Got 1st version of automake/autoconf producing a working
+	configure script!
+	* configure.in: OK, start of setting up the autoconf/automake
+	stuff...

@@ -1,0 +1,11 @@
+This is Risk Quantify, an Open Source Financial Risk Management framework.
+
+Risk Quantify is an open source financial library, with a focus on
+managing the risk of financial instruments. The aim of this project is
+to provide people working in the financial industry with a good base to
+use in building their own applications. Risk Quantify provides pricing
+routines, term structure building and management, calendar routines,
+asset management routines and more.
+
+Please see the docs directory in the Risk Quantify distribution for
+more info, or the website http://www.riskquantify.org

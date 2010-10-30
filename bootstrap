@@ -1,0 +1,3 @@
+#!/bin/sh
+#aclocal && libtoolize && automake -a -c && autoconf
+aclocal && automake -a -c && autoconf

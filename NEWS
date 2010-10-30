@@ -1,0 +1,204 @@
+Version 0.8.1 (2009-06-04)
+
+* Merged in code from the Razor-Risk crew. Thanks for the updates!!
+
+Version 0.7.9 (2008-04-03)
+
+* Merged in lots of code/patches and bug-fixes from Todd Cooper,
+  Hendra Arya Surya, Joey Nicotra, Dennis Hon, Jeremy Gates and
+  Richard Lewis.
+
+  NOTE: I've skipped some release numbers. There were lots of changes to
+  code in this release. I'm preparing for a 0.8.0 release.
+
+Version 0.7.6 (2006-01-03)
+
+* Added a rq_tree_rb_remove() function so that we can remove nodes
+from the red-black tree. Also it doesn't seem as though an in-order
+insertion of keys into the tree would actually produce a balanced
+tree. I've fixed this up.
+
+* Added a new test_tree_rb test for testing red-black trees.
+
+* Added generic iterator support to most of the container classes.
+
+* Added some matrix functions.
+
+* Added a poisson random number function.
+
+* Started a multi-factor monte carlo pricing function.
+
+Version 0.7.5 (2005-04-05)
+
+* Yield curves when interpolating or extrapolating rates using
+  zero-coupon rates, now have a default day count convention, which is
+  usually set to either ACT/365 (default) or ACT/360. The simple yield
+  curve bootstrapper and composite yield curve bootstrapper set this
+  value based on the days_per_year value of the underlying currency on
+  the yield curve.
+
+  Additive and Multiplicative factors are now applied to rates
+  calculated using the appropriate day count fraction.
+
+* There is also a new helper function rq_termstruct_get_type() to
+  determine what kind of term structure one is dealing with.
+
+* There are some helper functions in rq_rate_conversions.c to go from
+  a discount factor to an annual compounding zero-coupon rate and back
+  again.
+
+Version 0.7.4 (2005-04-01)
+
+* The payment amount on fixed rate flows is now calculated by dividing
+  the rate by the number of payments per year (currently calculated by
+  using the days in the period). If a periods_per_year value cannot be
+  worked out, the day count convention is used.
+
+* A minor bug-fix to ACT/ACT.AFB
+
+Version 0.7.3 (2005-03-31)
+
+* Every term structure now has an underlying asset ID.
+
+* A bracketing bug has been fixed in the rq_floating_flow code, which
+  was stopping it rate setting properly.
+
+* ACT/ACT.ISMA and ACT/ACT.AFB day count conventions have been
+  added. These still have to be properly tested.
+
+Version 0.7.2 (2005-03-30)
+
+* Fixed up a bug in using additive factors in the yield curve.
+
+  Worked on the rq_yc cmd line program - it should be nearly ready to go!
+
+  Worked on day_count factors.
+
+  Got interpolation and extrapolation on yield curves working using a
+  few different methods
+
+Version 0.7.1 (2005-03-16)
+
+* Lots of work done on term structures, floating flows, day count
+  conventions, roll conventions, and calendars!
+
+  There was a bug fix done for calculating the number of months
+  between dates in rq_date_month_diff.
+
+  I've added a new type - rq_floating_flow - for storing the
+  information needed to value asset-flow-based trades such as swaps or
+  bonds.
+
+  I've added functions for calculating day count fractions according
+  to the different conventions (in rq_day_count).
+
+  I've added functions for calculating the different roll dates
+  according to the different conventions.
+
+  I've also changed the roll date calculation functions so they can
+  take a list of calendars instead of only one.
+
+  I've extended rq_yield_curve so it can support being a composite
+  yield curve on two other yield curves.
+
+  I've *started* to extend rq_calendar to support composite calendars.
+
+  I've added the weekend dates to the rq_calendar object, in order to
+  support calendars that DON'T have Saturday and Sunday as weekends.
+
+  I've fixed up one bug in the rq_tree_rb_clone() function.
+
+  I've made the first part of any term structure object
+  (rq_yield_curve, rq_forward_curve, etc) be a standard rq_termstruct
+  type. This is so there can be standard routines to determine what
+  KIND of term structure a generic termstructure object is.
+
+Version 0.7.0 (2004-10-08)
+
+* I have changed Risk Quantify so objects are no longer opaque. Now
+  the structure of each object in Risk Quantify is specified in the
+  file header. This means that it's a lot easier to see how objects
+  are implemented (making it easier for new coders to get to grips
+  with the different objects), and also makes it easier to debug.
+
+  The consequence of this is that programs that were accessing or
+  assigning RQ objects by using the void * "p" member of the RQ object
+  structure will have to change the code. The return values from
+  object alloc calls and the first parameter to object functions are
+  direct pointers to the object structures themselves.
+
+Version 0.6.23 (2004-05-21)
+
+* I've added a variant type and a named variant manager. 
+* Fixed a bug in the rq_forward_curve.
+* Added a rq_string_set object.
+
+Version 0.6.22 (2004-02-10)
+
+* I've added an "external" term structure type, to support the ability
+  to build term structures that Risk Quantify knows nothing about.
+
+Version 0.6.21 (2003-11-07)
+
+* The code to call the pricing adapter initialization function after
+  loading had been commented out of the pricing engine.
+
+Version 0.6.20 (2003-10-24)
+
+* Generalized rq_asset_base_metal and rq_asset_precious_metal with
+  rq_asset_commodity
+
+Version 0.6.19 (2003-10-20)
+
+* Some work on partial barrier models, equity bermudans
+* Started an rq_iterator_t type to make all iterations standard.
+
+Version 0.6.18 (2003-10-08)
+
+* Some bugfixing on adding a rq_forward_curve
+* Added a basic test harness for forward curves.
+
+Version 0.6.17 (2003-10-01)
+
+* I've added a bootstrap adapter for spread curves
+
+* I've added a function to add a message to the rq_pricing_result
+  structure using a printf() style format
+
+Version 0.6.16 (2003-09-29)
+
+* I've added the ability to request an expected forward stock price.
+
+Version 0.6.15 (2003-09-22)
+
+* I've added some iteration to the rq_bootstrap_config_mgr (bah)
+
+* I've added some insertion and removal routines to the rq_vector code
+  (bah)
+
+Version 0.6.14 (2003-09-17)
+
+* I've fixed a bug in the calendar code, that occurs when adding more
+  than 40 holidays. (bah)
+
+* I've fixed a bug in the rq_bootstrap_adapter_equity_curve_simple
+  where the bootstrap adapter had the wrong bootstrap adapter
+  ID. (bah)
+
+Version 0.6.13 (2003-09-12) 
+
+* I fixed up a problem with the rq_defs.h file (I included the type in
+  the RQ_DOUBLE_EQUAL macro, so it didn't build under MSVC).
+
+Version 0.6.12 (2003-09-12) 
+
+* I've changed the interface to the pricing adapter. Now to get the
+face value of a trade, you make a call to get_pricing_results.
+
+Version 0.6.11 (2003-09-11)
+
+ * I've started updating the NEWS file again!! (bah)
+ * I've added a rq_rate_type_from_string function to rq_enum. (bah)
+ * I've got "make distcheck" building all the way through (bah)
+
+2002-07-18 Risk Quantify is moving to 'configure' (bah)
