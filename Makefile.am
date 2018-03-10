@@ -7,5 +7,5 @@ SUBDIRS = src
 EXTRA_DIST = bootstrap riskquantify.sln riskquantify.vcproj
 # EXTRA_DIST = riskquantify.dsw
 
-# do-checks:
-#	(cd bin; ./do-checks.sh)
+do-checks:
+	(cd bin; ./do-checks.sh)

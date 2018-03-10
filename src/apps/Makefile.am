@@ -1,0 +1,1 @@
+SUBDIRS = cmdline swig riskquantify

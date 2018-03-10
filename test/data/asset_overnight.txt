@@ -1,0 +1,3 @@
+# Overnight interest rates
+AUDO/N|AUD|365
+USDO/N|USD|360

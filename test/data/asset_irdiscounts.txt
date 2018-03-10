@@ -1,0 +1,3 @@
+AusGovTNote1|AUD|0,1,0,0|365
+AusGovTNote2|AUD|0,2,0,0|365
+AusGovTNote3|AUD|0,3,0,0|365

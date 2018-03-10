@@ -1,0 +1,663 @@
+\input texinfo   @c -*-texinfo-*-
+
+@c {{{ header
+@c %**start of header
+@setfilename riskquantify.info
+@include version.texi
+@settitle "Risk Quantify" @value{VERSION}
+@c %**end of header
+@c {{{endfold}}}
+
+@c {{{ title page
+@titlepage
+@title Risk Quantify
+@subtitle Edition @value{EDITION}, @value{UPDATED}
+@subtitle an Open Source Financial Risk Management Library
+@author Brett Hutley
+@author @email{brett@@hutley.net}
+
+@c  The following two commands
+@c  start the copyright page.
+@page
+@vskip 0pt plus 1filll
+
+This manual is for Risk Quantify, version @value{VERSION}
+
+Copyright @copyright{} 2000, 2001, 2002, 2003 Brett Hutley.
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``GNU General Public License''
+@end quotation
+
+@end titlepage
+@c {{{endfold}}}
+
+@c {{{ contents
+@contents
+
+@ifnottex
+@node Top
+@top Risk Quantify
+@end ifnottex
+
+@menu
+* Introduction:: 
+* The Design of Risk Quantify::
+* Building Risk Quantify::
+* Assets::
+* Rates and Rate Classes::
+* Term Structures::
+* Option Pricing::
+* Portfolios Deals and Trades::
+@c * Functional Documentation::
+* Index::
+@end menu
+@c {{{endfold}}}
+
+@c {{{ introduction
+@node Introduction
+@chapter Introduction to Risk Quantify
+@cindex Introduction to Risk Quantify
+
+@c {{{ what is risk quantify?
+@section What is Risk Quantify?
+
+Risk Quantify is an open source financial library, with a focus on
+managing the risk of financial instruments. The aim of this project is
+to provide people working in the financial industry with a good base to
+use in building their own applications. Risk Quantify provides functions
+for pricing, term structure building and management, calendar and event
+use, asset management and more.
+
+Risk Quantify also provides a @emph{framework} for pricing and
+managing and analysing the risk associated with financial products.
+This means that Risk Quantify embodies a methodology for performing
+the tasks needed to manage financial instruments over their lifecycle
+--- quoting, trading, hedging, risk management, accounting and
+settling or expiring the trades. The framework should be general
+enough to cope with any financial product that is currently traded.
+Not everyone needs to use this framework however.  Some people will
+just be interested in using the pricing algorithms, or the trade
+management functionality.  Risk Quantify should be flexible enough so
+people with different needs can use the library easily and without
+taking on too much framework baggage.
+
+Risk Quantify is very portable, and is actively being developed on MS
+Windows, Linux, MacOSX and *BSD Unix.
+
+Currently Risk Quantify supports (to various extents) the following
+products:
+
+@itemize @bullet
+@item
+Interest Rate Derivatives @xref{Interest Rate Assets}.
+
+@c @item 
+@c Foreign Exchange and FX Derivatives @xref{Foreign Exchange Assets}.
+
+@item
+Equities and Equity Derivatives @xref{Equities}.
+
+@item 
+Commodities @xref{Commodities}.
+
+@item
+Credit Derivatives @xref{Credit Derivatives}.
+
+@end itemize
+
+@c {{{endfold}}}
+
+@c {{{ history of risk quantify
+@section History of Risk Quantify
+
+Risk Quantify was started back in 1999 by me, Brett Hutley
+@email{brett@@hutley.net}. It was originally intended to be a commercial
+product with a front-end called ``Amadeus''. Several different
+incarnations of Amadeus were made - a DLL version for pricing different
+types of derivaties that was embedded into Excel, a GUI for managing FX
+derivatives and exotic options, and a GUI for managing Interest Rate
+derivates. With each successive version I refined the ideas for how the
+underlying framework should be structured.
+
+I soon discovered how hard it is to market financial risk management
+systems to banks as a small company without a proven track record, and
+being a big believer in open source I decided to refine my existing code
+into a new open source project called ``Risk Quantify''. Risk Quantify
+was registered on @uref{http://www.sourceforge.net/, SourceForge} in
+2000.
+
+Since then Risk Quantify has grown in fits and starts when I've had some
+free time to work on it, and I've learnt a lot about what to do (and
+what not to do) in running an open source project.
+
+At the beginning of 2002, the company that I work for ---
+@uref{http://www.ite.com.au/, IT&e} --- gave me some time to further
+develop Risk Quantify.
+
+Risk Quantify is currently being used as a base library for
+@uref{http://www.ite.com.au/, IT&e's} commercial product, Razor.
+
+@c {{{endfold}}} history }}}
+
+@c {{{endfold}}} introduction }}}
+
+@c {{{ design of risk quantify
+@node The Design of Risk Quantify
+@chapter The Design of Risk Quantify
+@cindex Design of Risk Quantify
+@cindex Risk Quantify's Design
+
+@section Coding Considerations
+
+Risk Quantify tries to implement an object oriented design, even though
+it is written in ``C''. It does this by making private the
+implementation of the various objects in the system, hiding the
+structure definition in the source file, but exposing the public
+functions in the header files.  Most public functions take as the first
+argument the object that the function is operating on. This first
+argument is usually defined as a structure with a void pointer in the
+header file, so that users of the object cannot directly manipulate the
+members of the structure. The compiler @emph{will} however enforce
+type-safety with the parameters to the functions because each object has
+a different structure (containing only a void pointer) defined for
+it. 
+
+An example will help demonstrate what I mean. Say that we wanted to
+declare a new object called ``rq_test''. The ``.c'' file would have the
+structure definition for rq_test, and an @code{rq_test_alloc} function
+that allocates a new object of type rq_test, but returns an object of
+type rq_test_t - defined in the header file as a structure containing
+only a void pointer. The ``.c'' file would also have an
+@code{rq_test_free} function to free the rq_test structure (although it
+would get passed the rq_test_t object as a parameter). Users of this
+object can see only what is in the header file - the rq_test_t structure
+that contains a void pointer, and the prototypes for
+@code{rq_test_alloc} and @code{rq_test_free}.
+
+Assets represent anything in Risk Quantify that has financial value.
+Because they hold a lot of the complexity they have a chapter to
+themselves @xref{Assets}.
+
+@c {{{ system object
+@section The System Object
+@cindex System Object, the
+
+The @code{rq_system} object holds most of the support data that
+financial systems need in order to do their job.  This is stuff like the
+list of assets, the calendars for different currencies and the rules for
+bootstrapping term structures from rates/prices @xref{Bootstrapping}.
+
+Often the first thing that a Risk Quantify-based system will do is
+instantiate an object of type rq_system_t through the
+@code{rq_system_alloc} function.
+
+@c {{{endfold}}}
+
+@c {{{ market object
+@section The Market Object
+@cindex Market Object, the
+
+The @code{rq_market} object contains price and rate information
+representing the state of the market at a particular point in time. The
+@code{rq_market} object also manages the yield curves, forward curves
+and volatility surfaces that are derived from the market rates.
+
+@c {{{endfold}}} rq_market
+
+@c {{{ pricing adapters
+@section Pricing Adapters
+@cindex Pricing Adapters
+
+Pricing Adapters act as an adapter object between different types of
+financial instruments and pricing models. Quite often you might want to
+use the same pricing model for a number of different instruments, or use
+different pricing models for the same financial instrument. The pricing
+adapter framework allows these types of interactions between pricing
+model and instrument to be possible.
+
+@c {{{endfold}}} pricing adapters
+
+@c {{{endfold}}}
+
+@c {{{ building risk quantify
+
+@node Building Risk Quantify
+@chapter Building Risk Quantify
+
+@menu
+* Requirements::
+* Getting the source::
+* Building::
+@end menu
+
+@c {{{ requirements
+@node Requirements
+@section Requirements
+
+@subsection Unix/Linux Requirements
+SWIG is used to generate the interfaces for Perl and Guile. You can
+disable the generation of the SWIG-based interface via the configure script.
+
+To build the documentation, you need to have TexInfo installed.
+Doxygen version 1.2.18 obtainable from @url{http://www.doxygen.org}.
+
+@subsection MS Windows Requirements
+
+You will need Visual Studio or C++Builder to build Risk Quantify under
+MS Windows. There is a Visual Studio workspace called
+``riskquantify.dsw'', in the base project directory. There is a
+C++Builder project file in the ``riskquantify/src/rq/bcb'' directory.
+
+@c {{{endfold}}}
+
+@c {{{ getting the source
+@node Getting the source
+@section Getting the source
+
+@c {{{ pulling the source from CVS
+@subsection Pulling the source from CVS
+
+If you are using a Windows machine, I recommend downloading and
+installing cygwin from Red Hat.
+
+This is what you should do to get the source if you don't have developer
+access to Risk Quantify.
+
+First login to the repository:
+
+@example
+cvs -d:pserver:anonymous@@cvs.riskquantify.sourceforge.net:/cvsroot/riskquantify login 
+@end example
+
+Next, check-out the source:
+
+@example
+cvs -d:pserver:anonymous@@cvs.riskquantify.sourceforge.net:/cvsroot/riskquantify co -P riskquantify
+@end example
+
+The ``-P'' option is very important, as over Risk Quantify's lifetime
+I've changed the directory structure a few times. The ``-P'' option
+``prunes'' empty directories that are in CVS.
+
+To update your source with the latest version in CVS, use the following
+command:
+
+@example
+cd riskquantify
+cvs -d:pserver:anonymous@@cvs.riskquantify.sourceforge.net:/cvsroot/riskquantify update -dP
+@end example
+@c {{{endfold}}}
+
+@c {{{ getting the source from SourceForge
+@subsection Getting the source from SourceForge
+
+You can get the latest release of the source from SourceForge, at the
+url; http://sourceforge.net/projects/riskquantify, under the menu
+option ``Files''.
+@c {{{endfold}}}
+
+@c {{{endfold}}}
+
+@c {{{ building
+@node Building
+@section Building
+
+@subsection Building on Unix/Linux
+
+If you have got the source from CVS, you will need to type ``aclocal''
+followed by ``automake -a -c'', and then ``autoconf'' to generate the
+``configure'' file. (This has only been tested under Unix/Linux).
+
+You should then be able to type ``configure'' with the appropriate
+options to generate the Makefiles.  Running ``make'' will build the
+Risk Quantify library, sample applications and test scripts. Running
+``make check'' will execute the test scripts.
+
+@subsection Building on MS Windows
+
+Building the library on MS Windows is as simple as opening the
+appropriate project file with C++Builder or Visual Studio and building.
+
+@c {{{endfold}}}
+
+@c {{{endfold}}}
+
+@c {{{ assets
+@node Assets
+@chapter Assets
+@cindex Assets
+
+@menu
+* Currencies::
+* Currency Pairs::
+* Interest Rate Assets::
+* Equities::
+* Commodities::
+* Credit Derivatives::
+@end menu
+
+An ``asset'' represents something that has financial value. A trade
+@xref{Trades}, represents exchanges of assets. The asset structure is
+essentially overloaded with the various attributes that give that
+particular type of asset it's unique characteristics.
+
+@c {{{ currencies
+@node Currencies
+@section Currencies
+
+Currencies don't obviously have financial value as of themselves, but
+this asset is used as a basis for cash flows, and yield curves on this
+asset represent the future value of money.
+
+This asset is represented by the rq_asset_ccy class.
+
+@c {{{endfold}}}
+
+@c {{{ currency pairs
+@node Currency Pairs
+@section Currency Pairs
+
+Currency pairs, like currencies, don't have any obvious financial value
+in of themselves, but this asset is used to represent the exchange of
+one currency for another currency, and form a base asset for foreign
+exchange transactions. The currency pair asset also contains various
+market conventions, such as the quote convention for a particular
+currency pair.
+
+@c {{{endfold}}}
+
+@c {{{ interest rate assets
+@node Interest Rate Assets
+@section Interest Rate Assets
+
+Interest rate assets tend to have their own market conventions that are
+important in both pricing and bootstrapping yield curves from underlying
+prices. For this reason various types of interest rate assets are
+represented in Risk Quantify.
+
+@menu
+* Discount Instruments::
+* Bonds::
+* Interest Rate Swaps::
+@end menu
+
+@c {{{ discount instruments
+@node Discount Instruments
+@subsection Discount Instruments
+@cindex Discount Instruments
+
+Discount instruments are financial instruments that represent a promise
+to pay back a certain fixed amount of money at maturity. These
+instruments trade at a discount to the amount that will be repaid.
+
+These instruments are represented by the rq_asset_irdiscount structure.
+@c {{{endfold}}} discount instruments }}}
+
+@c {{{ bonds
+@node Bonds
+@subsection Bonds
+@cindex Bonds
+
+Bonds are financial instruments that promise the bearer a stream of
+cashflows, usually terminating in the repayment of the principal amount.
+@c {{{endfold}}} bonds }}}
+
+@c {{{ swaps
+@node Interest Rate Swaps
+@subsection Interest Rate Swaps
+@cindex Interest Rate Swaps
+
+Interest rate swaps are financial instruments where one counterparty
+swaps a stream of payments with another counterparty for another stream
+of payments with different characteristics. For example, a common type
+of interest rate swap is a "Fixed/Floating" swap that exchanges a stream
+of payments based on a fixed interest rate for a stream of payments
+based on a floating interest rate.
+
+@menu
+* Accordion Swaps::
+* Asset Swaps::
+@end menu
+
+@node Accordion Swaps
+@subsubsection Accordion Swaps
+@cindex Accordion Swaps
+@cindex Concertina Swaps
+@cindex NPV Swaps
+
+Accordion Swaps are interest rate swaps giving a counterparty the
+ability to modify the term of the swap with a corresponding change in
+notional value or fixed rate or both in order to keep the NPV of the
+swap the same.
+
+@node Asset Swaps
+@subsubsection Asset Swaps
+@cindex Asset Swaps
+
+Asset Swaps are swaps designed to change the characteristics of an
+underlying interest rate security, for example; changing fixed coupon
+payments to floating coupon payments.
+
+@c {{{endfold}}} interest rate assets }}}
+
+@c {{{ equities
+@node Equities
+@section Equities
+@cindex Equities
+
+Equities or stock are a means of transferring ownership of a
+company. Equities have many characteristics that are important to take
+into consideration when pricing equity-based financial
+instruments. Often a stock may pay a dividend at regular periods of
+time, refered to as a ``dividend stream''.
+
+@c {{{endfold}}} equities }}}
+
+@c {{{ commodities
+@node Commodities
+@section Commodities
+@cindex Commodities
+
+@c {{{endfold}}} commodities }}}
+
+@c {{{ credit derivatives
+@node Credit Derivatives
+@section Credit Derivatives
+@cindex Credit Derivatives
+
+Credit derivatives provide the ability for a party to take a position or
+immunize themselves against credit risk.
+
+In Risk Quantify, credit derivatives are priced using a credit spread
+based on the institution's industry and credit rating.
+
+@c {{{endfold}}} credit derivatives }}}
+
+@c {{{endfold}}} assets
+
+@c {{{ rates and prices
+@node Rates and Rate Classes
+@chapter Rates and Rate Classes
+@cindex Rates and Rate Classes
+@cindex Rates
+@cindex Rate Classes
+
+A rate in Risk Quantify is used to represent the value of a
+characteristic of an asset at a particular point in time. This
+characteristic might be the @emph{price} of the asset. It may be the
+volatility of specific contracts of that asset at a particular forward
+date. The structure which defines the characteristics of the value
+quoted is the @emph{rate class}.
+
+As an example, we can get the exchange rate in Reuters for AUD/USD
+spot, for 1 month AUD/USD, for 3 month AUD/USD, etc. These rates are
+all for the same "kind" of asset, the exchange of AUD for USD, but
+exchanged at various times. This is represented in Risk Quantify by
+having various @emph{rate classes} that identify the characteristics
+of the rate -- ``AUD/USD Spot'', ``AUD/USD 1M'', etc. The individual
+rates then represent an instantiation of the rate class. For example
+a rate may have a rate class of ``AUD/USD Spot'' with a value of 0.64.
+
+Individual rates can then refer to the appropriate rate class to define
+the characteristics for which they are quoted.
+
+The reason why we have implemented this design
+
+@c {{{endfold}}} rates and prices
+
+@c {{{ term structures
+@node Term Structures
+@chapter Term Structures
+@cindex Term Structures
+
+@menu
+* Bootstrapping::
+@end menu
+
+Term structures refer to the way that price that changes over time. In
+the market, the price of an instrument will vary according to the
+delivery date of the contract. There is a theoretical curve representing
+a ``pure'' value for the asset as it changes over time. This theoretical
+curve is usually implied from market observed rates and prices, and the
+process of creating the term structure is called ``bootstrapping''.
+
+@c {{{ bootstrapping
+@node Bootstrapping
+@section Bootstrapping Term Structures
+
+In Risk Quantify, bootstrapping is done using a bootstrap configuration
+object. The bootstrap configuration object specifies the rate classes to
+use in order to bootstrap a particular type of curve.
+
+@c {{{endfold}}} bootstrapping
+
+@c {{{endfold}}} term structs
+
+@c {{{ option pricing
+@node Option Pricing
+@chapter Option Pricing
+
+@menu
+* Black Scholes::
+* Binomial::
+* Finite Differences::
+@end menu
+
+@c {{{ black scholes
+@node Black Scholes
+@section Black Scholes
+
+The Black-Scholes formula for a call vanilla european option on a
+non-dividend paying asset is given as:
+
+@tex
+
+$$ C_t = N\left(d_1\right) S_t - \exp^{-r\left(T-t\right)} K
+N\left(d_2\right) $$
+
+@end tex
+
+@c {{{endfold}}} black scholes }}}
+
+@c {{{ binomial
+@node Binomial
+@section Binomial
+
+@c {{{endfold}}} binomial }}}
+
+@c {{{ finite differences
+@node Finite Differences
+@section Finite Differences
+
+The finite difference method of pricing models the diffusion of option
+prices across time.
+
+@c {{{endfold}}} finite differences }}}
+
+@c {{{endfold}}} option pricing }}}
+
+
+@c {{{ portfolios, deals and trades
+@node Portfolios Deals and Trades
+@chapter Portfolios Deals and Trades
+
+@menu
+* Portfolios::
+* Deals::
+* Trades::
+@end menu
+
+@c {{{ portfolios
+@node Portfolios
+@section Portfolios
+
+Portfolios represent a list of Deals.
+
+@c {{{endfold}}}
+
+@c {{{ deals
+@node Deals
+@section Deals
+
+Deals represent containers for Trades.
+
+@c {{{endfold}}} deals...
+
+@c {{{ trades
+@node Trades
+@section Trades
+
+A trade is an exchange of assets to various counterparties. Because
+trades can be structured in a myriad of ways they can be notoriously
+difficult to model. In Risk Quantify, a lot of the complexity is handled
+at the asset level @xref{Assets}, which allows us to represent trades
+at a higher level of abstraction.
+
+@menu
+* Trade Life Cycle::
+@end menu
+
+@c {{{ trade life cycle
+@node Trade Life Cycle
+@subsection Trade Life Cycle
+
+Trades are conceived, then born, then eventually grow old and die. At
+conception, the trade is merely an idea between two counterparties - an
+example of this is a @emph{quote}. At some point the trade then gets
+@emph{dealt}, and needs to be managed. The trade may then go through
+many states after that, depending on what kind of trade it is, until it
+eventually is settled, matures or expires worthless. Trades may also
+transition into new kinds of assets when barriers are breached, or
+options are exercised.
+
+@c {{{endfold}}} trade life cycle }}}
+
+@c {{{endfold}}} trades}}}
+
+@c {{{endfold}}} portfolios, deals and trades
+
+
+@c {{{ functions
+
+@c @node Functional Documentation
+@c @chapter Functional Documentation
+
+@c @include riskquantify_funcs.texi
+
+@c {{{endfold}}} end functions
+
+@c {{{ index
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@shortcontents
+@contents
+@c {{{endfold}}} index }}}
+
+@bye

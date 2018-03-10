@@ -1,3 +1,6 @@
 #!/bin/sh
-#aclocal && libtoolize && automake -a -c && autoconf
-aclocal && automake -a -c && autoconf
+aclocal
+case `uname` in Darwin*) glibtoolize ;;
+                   *) libtoolize  ;;esac
+automake -a -c && autoconf
+#aclocal && automake -a -c && autoconf

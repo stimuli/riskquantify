@@ -1,6 +1,19 @@
 # File types #
 ##############
 *.pyc
+*.o
+*.a
+*.lo
+*.la
+*.in
+*.log
+*.guess
+*.status
+
+.deps
+.libs
+
+Makefile
 
 # OS generated files #
 ######################
